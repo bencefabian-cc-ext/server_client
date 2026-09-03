@@ -8,14 +8,15 @@ using tcp = asio::ip::tcp;
 
 class SharedSocket {
   tcp::socket socket_;
-  std::mutex mtx_;
+  std::mutex mtx_{};
 
 public:
   SharedSocket(const SharedSocket &) = delete;
   SharedSocket(SharedSocket &&) = delete;
   SharedSocket &operator=(const SharedSocket &) = delete;
   SharedSocket &operator=(SharedSocket &&) = delete;
-  explicit SharedSocket(asio::io_context &io) : socket_{io}, mtx_{} {}
+  explicit SharedSocket(asio::io_context &io) : socket_{io} {}
+  explicit SharedSocket(tcp::socket && socket): socket_{std::move(socket)} {}
   class Guard {
     tcp::socket &socket_;
     std::scoped_lock<std::mutex> lock_;
