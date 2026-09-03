@@ -3,6 +3,7 @@
   lib,
   cmake,
   ninja,
+  clang,
   boost,
 }:
 
@@ -21,6 +22,7 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     cmake
     ninja
+    clang
   ];
 
   buildInputs = [
