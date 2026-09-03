@@ -15,7 +15,7 @@ stdenv.mkDerivation {
     fileset = unions [
       ./client.cpp
       ./CMakeLists.txt
-      ./main.cpp
+      ./server.cpp
     ];
   };
 
