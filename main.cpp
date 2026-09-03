@@ -101,10 +101,11 @@ void session(tcp::socket socket) noexcept {
         std::istream first_msg{&buffer};
         std::getline(first_msg, name);
     }
+    BOOST_LOG_TRIVIAL(info) << name << " has logged on.";
     while (true) {
         auto size_read = asio::read_until(socket, buffer, '\n', ec);
         if (ec == asio::error::eof) {
-            std::cout << "connection closed" << std::endl;
+            BOOST_LOG_TRIVIAL(info) << "connection closed";
             break; // from while
         }
         if (ec) {
@@ -113,11 +114,12 @@ void session(tcp::socket socket) noexcept {
         std::istream maybe_line{&buffer};
         std::string content;
         std::getline(maybe_line, content);
-        std::cout << "Received: " << content << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "Received: " << content;
         content.append("\n");
         std::string message{name};
         message.append(": ");
         message.append(content);
+        message.append("\n");
         asio::write(socket, asio::buffer(message), ec);
         if (ec) {
             return;
@@ -129,11 +131,11 @@ int main() {
     asio::io_context io;
     const int port_num = 5000;
     tcp::acceptor acceptor{io, tcp::endpoint{tcp::v4(), port_num}};
-    std::cout << "started listening on: " << port_num << "\n";
+    BOOST_LOG_TRIVIAL(info) << "started listening on: " << port_num;
     while (true) {
         tcp::socket socket{io};
         acceptor.accept(socket);
-        std::cout << "connection accepted" << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "connection accepted";
         std::thread(session, std::move(socket)).detach();
     }
 }
