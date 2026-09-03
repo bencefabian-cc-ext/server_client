@@ -94,8 +94,15 @@ using tcp = asio::ip::tcp;
 void session(tcp::socket socket) noexcept {
     asio::streambuf buffer{1024};
     error_code ec;
+    asio::read_until(socket, buffer, '\n', ec);
+    if (ec) { return; }
+    std::string name;
+    {
+        std::istream first_msg{&buffer};
+        std::getline(first_msg, name);
+    }
     while (true) {
-        auto size_read= asio::read_until(socket, buffer, '\n', ec);
+        auto size_read = asio::read_until(socket, buffer, '\n', ec);
         if (ec == asio::error::eof) {
             std::cout << "connection closed" << std::endl;
             break; // from while
@@ -108,8 +115,10 @@ void session(tcp::socket socket) noexcept {
         std::getline(maybe_line, content);
         std::cout << "Received: " << content << std::endl;
         content.append("\n");
-        BOOST_LOG_TRIVIAL(info) << "Received: " << content << std::endl;
-        asio::write(socket, asio::buffer(content), ec);
+        std::string message{name};
+        message.append(": ");
+        message.append(content);
+        asio::write(socket, asio::buffer(message), ec);
         if (ec) {
             return;
         }
