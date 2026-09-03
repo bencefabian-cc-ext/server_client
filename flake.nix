@@ -31,7 +31,7 @@
                 *)
                   ;;
               esac
-              cmake -B "$BUILD_DIR" -GNinja -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+              cmake -B "$BUILD_DIR" -G Ninja -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               rm compile_commands.json || true
               ln -s "$BUILD_DIR"/compile_commands.json .
             }
