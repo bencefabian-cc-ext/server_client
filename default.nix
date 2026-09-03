@@ -16,6 +16,7 @@ stdenv.mkDerivation {
       ./client.cpp
       ./CMakeLists.txt
       ./server.cpp
+      ./shared_socket.hpp
     ];
   };
 

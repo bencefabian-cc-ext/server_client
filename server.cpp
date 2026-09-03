@@ -2,13 +2,26 @@
 #include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 #include <iostream>
+#include <memory>
 #include <utility>
+#include <vector>
 
 using error_code = boost::system::error_code;
 namespace asio = boost::asio;
 using tcp = asio::ip::tcp;
 
-void session(tcp::socket socket) noexcept {
+class ActiveSockets {
+  std::vector<tcp::socket *> sockets_{};
+  std::mutex mtx_{};
+
+public:
+  void add_socket(tcp::socket * const s) {
+    sockets_.push_back(s);
+  }
+};
+
+void session(tcp::socket socket,
+             std::shared_ptr<ActiveSockets> active_sockets) noexcept {
   asio::streambuf buffer{1024};
   error_code ec;
   asio::read_until(socket, buffer, '\n', ec);
@@ -51,10 +64,11 @@ int main() {
   const int port_num = 5000;
   tcp::acceptor acceptor{io, tcp::endpoint{tcp::v4(), port_num}};
   BOOST_LOG_TRIVIAL(info) << "started listening on: " << port_num;
+  auto active_sockets = std::make_shared<ActiveSockets>();
   while (true) {
     tcp::socket socket{io};
     acceptor.accept(socket);
     BOOST_LOG_TRIVIAL(info) << "connection accepted";
-    std::thread(session, std::move(socket)).detach();
+    std::thread(session, std::move(socket), active_sockets).detach();
   }
 }
