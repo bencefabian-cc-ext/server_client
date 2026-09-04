@@ -80,14 +80,20 @@ void session(tcp::socket socket,
   while (true) {
     {
       auto sock = shared_socket.acquire();
+      auto mode = sock->non_blocking();
+      sock->non_blocking(true);
       asio::read_until(*sock, buffer, '\n', ec);
-
+      sock->non_blocking(mode);
+    }
+    if (ec == asio::error::try_again) {
+      continue;
     }
     if (ec == asio::error::eof) {
       BOOST_LOG_TRIVIAL(info) << "connection closed";
       break; // from while
     }
     if (ec) {
+      BOOST_LOG_TRIVIAL(error) << ec.message();
       return;
     }
     std::istream maybe_line{&buffer};
